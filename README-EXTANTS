@@ -1,0 +1,32 @@
+Steven Griffin sgriff27@jhu.edu
+
+Part 1: Extants
+
+sysfile.c
+
+This file contains implementations of fs-related system calls. These
+functions mostly grab arguments from the saved user stack,
+do error handling, and call the relevant functions in file.c and
+fs.c.
+
+User file descriptor ints are used to look up file structs in the
+currently executing process's array of pointers to file structs.
+
+file.c
+
+These functions take the file struct pointer we found in sysfile.c
+and/or the global ftable file array and implement the actual functionality 
+of the syscalls by calling the next layer of abstraction, inodes in fs.c.
+
+They also handle reference counting for file structs so that files are
+only closed when no processes are using them anymore.
+
+fs.c
+
+
+
+String path lookups eventually call namex, which looks up the relevant
+inode. Paths like "abc" start at the current working directory inode;
+paths like "/abc" start at the root directory inode. Then we loop,
+following the path down one element (directory/file name) at a time with
+skipelem and dirlookup until we get to the file itself.
