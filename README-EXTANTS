@@ -37,7 +37,9 @@ ilock and iunlock make sure inodes are not modified concurrently.
 readi and writei interact with the buffer layer to move data from a
 buffer's data char* into a destination char* and vice versa. They also
 call bmap, which maps local inode block numbers to absolute disk block
-addresses.
+addresses. Disk location info is stored in the inode's addrs array. If the
+file needs more than NDIRECT disk blocks, the rest are stored in a disk
+block at address addrs[NDIRECT].
 
 String path lookups eventually call namex, which looks up the relevant
 inode. Paths like "abc" start at the current working directory inode;
@@ -46,5 +48,24 @@ following the path down one element (directory/file name) at a time with
 skipelem and dirlookup until we get to the file itself.
 
 bio.c
+
+This file handles the buffer layer. These are cached in memory
+in an array-backed linked list to improve performance. buf structs contain
+the actual data in the disk sector in an array of uchars, as well as
+flags, the disk/device they belong to, and their sector number.
+
+bread gets a cached buf by calling bget or reads it from the disk if
+it isn't cached. bwrite writes a buf to disk. brelse releases a buffer
+from the cache.
+
+log.c
+
+This file fixes inconsistencies and bugs that can occur due to crashes
+and concurrent writes by implementing transactions.
+
+Part 2 Plan:
+
+Expand the stat struct in stat.h to contain information about disk
+location. Modify stati in fs.c accordingly.
 
 
