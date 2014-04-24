@@ -23,10 +23,28 @@ only closed when no processes are using them anymore.
 
 fs.c
 
+Inodes provide information about files and an abstraction over raw
+buffers.
 
+Inodes being used are cached in RAM and reference counted. iget finds a
+cached inode given its inum by looping through the icache's array of
+inodes and checking their inum or recycles a cached inode with no
+references to it. iput drops a ref to a cached inode and idup increases its
+ref count. ialloc makes a new on-disk inode (dinode) and returns the
+relevant cached inode. iupdate copies an inode into the relevant dinode.
+ilock and iunlock make sure inodes are not modified concurrently.
+
+readi and writei interact with the buffer layer to move data from a
+buffer's data char* into a destination char* and vice versa. They also
+call bmap, which maps local inode block numbers to absolute disk block
+addresses.
 
 String path lookups eventually call namex, which looks up the relevant
 inode. Paths like "abc" start at the current working directory inode;
 paths like "/abc" start at the root directory inode. Then we loop,
 following the path down one element (directory/file name) at a time with
 skipelem and dirlookup until we get to the file itself.
+
+bio.c
+
+
